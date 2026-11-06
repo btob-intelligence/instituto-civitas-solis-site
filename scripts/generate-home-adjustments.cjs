@@ -3,9 +3,9 @@ const path = require("path");
 
 const root = process.cwd();
 const inputName = "index-i18n-stable-8f6c2d1.js";
-const outputName = "index-global-mobile-panel-6c2e9a4.js";
-const cssOutputName = "index-global-mobile-panel-6c2e9a4.css";
-const revision = "global-mobile-panel-2026-11-06";
+const outputName = "index-fixed-youtube-gallery-3d7a1e8.js";
+const cssOutputName = "index-fixed-youtube-gallery-3d7a1e8.css";
+const revision = "fixed-youtube-gallery-2026-11-06";
 const logoUrl = "https://cdn.awsli.com.br/436/436130/favicon/f0c196521f.png";
 
 const input = path.join(root, "assets", inputName);
@@ -98,8 +98,8 @@ const runtime = `;(()=>{
     document.documentElement.classList.remove("ics-route-mvv");
     document.documentElement.classList.add("ics-route-publications");
     const main=document.querySelector("main")||document.querySelector("#root > div > div")||document.getElementById("root");
-    if(!main||main.getAttribute("data-ics-publications-rendered")==="publications-dialogues-2026-11-06")return true;
-    main.setAttribute("data-ics-publications-rendered","publications-dialogues-2026-11-06");
+    if(!main||main.getAttribute("data-ics-publications-rendered")==="fixed-youtube-gallery-2026-11-06")return true;
+    main.setAttribute("data-ics-publications-rendered","fixed-youtube-gallery-2026-11-06");
     main.innerHTML='<section class="ics-publications-hero"><div class="ics-publications-hero-inner"><p class="ics-publications-eyebrow">Publicações Civitas Solis</p><h1>Acervo de Livros</h1><p>Uma seleção de obras sobre arte, espiritualidade, ciência, tradição hermética e desenvolvimento interior.</p></div></section><section class="ics-publications-list">'+publicationsBooks.map((book,index)=>'<article class="ics-publication-card '+(index%2?'ics-publication-card-alt':'')+'"><div class="ics-publication-cover-wrap"><img src="'+book.image+'" alt="Capa do livro '+book.title+'" loading="lazy"></div><div class="ics-publication-copy"><p class="ics-publication-kicker">'+book.meta+'</p><h2>'+book.title+'</h2><h3>'+book.subtitle+'</h3><p class="ics-publication-author">'+book.author+'</p><p>'+book.description+'</p><div class="ics-publication-actions">'+amazonButton(book)+'</div></div></article>').join('')+'</section>';
     return true;
   };
@@ -129,6 +129,21 @@ const runtime = `;(()=>{
       a.classList.toggle("ics-publications-active",active);
       if(active)a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");
     });
+  };
+  const bindPublicationsNavigation=()=>{
+    if(window.__icsPublicationsNavigationBound)return;
+    window.__icsPublicationsNavigationBound=true;
+    document.addEventListener("click",event=>{
+      if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+      const link=event.target.closest&&event.target.closest("a[href]");
+      if(!link||link.target==="_blank"||link.hasAttribute("download"))return;
+      const url=new URL(link.href,location.href);
+      if(url.origin!==location.origin)return;
+      if(location.pathname!=="/publicacoes"&&url.pathname!=="/publicacoes")return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      location.assign(url.pathname+url.search+url.hash);
+    },true);
   };
 
   const copy={
@@ -300,10 +315,22 @@ const runtime = `;(()=>{
     if(!isMvvPage())return;
     document.querySelectorAll(".values-constellation").forEach(el=>{if(!el.classList.contains("ics-values-spaced"))el.classList.add("ics-values-spaced")});
   };
+  const ensureFixedYouTubeGallery=scope=>{
+    if(!scope)return;
+    const widget=scope.querySelector(".youtube-widget-card");
+    if(widget&&!widget.querySelector("[data-ics-video-gallery]"))widget.innerHTML='<div data-ics-video-gallery translate="no"></div>';
+    scope.querySelectorAll(".elfsight-app-a0895143-ea93-4311-9987-4bd3b9f4ee8d").forEach(el=>{
+      const host=document.createElement("div");
+      host.setAttribute("data-ics-video-gallery","");
+      host.setAttribute("translate","no");
+      el.replaceWith(host);
+    });
+  };
   const fixHomeYouTube=()=>{
     const section=byHeading(["Nosso YouTube","Our YouTube","Nuestro YouTube","Notre YouTube","Unser YouTube","Il Nostro YouTube"]);
     if(!section||section.classList.contains("youtube-page"))return;
     [...section.querySelectorAll("p")].forEach(p=>{if(has(p.innerText,["Explore nossos conteúdos sobre filosofia, cultura e espiritualidade.","Explore our content on philosophy, culture and spirituality.","Explore nuestros contenidos sobre filosofía, cultura y espiritualidad.","Explorez nos contenus sur la philosophie, la culture et la spiritualité.","Entdecken Sie unsere Inhalte zu Philosophie, Kultur und Spiritualität.","Esplora i nostri contenuti su filosofia, cultura e spiritualità."]))p.remove()});
+    ensureFixedYouTubeGallery(section);
   };
 
   const fixInstagram=()=>{
@@ -314,9 +341,10 @@ const runtime = `;(()=>{
     document.querySelectorAll(".youtube-hero h1").forEach(el=>{if(!el.classList.contains("ics-youtube-title"))el.classList.add("ics-youtube-title")});
     document.querySelectorAll(".youtube-hero p").forEach(el=>{if(!el.classList.contains("ics-youtube-subtitle"))el.classList.add("ics-youtube-subtitle")});
     document.querySelectorAll(".youtube-about").forEach(el=>el.remove());
+    ensureFixedYouTubeGallery(document.querySelector(".youtube-page")||document);
   };
   const safe=fn=>{try{fn()}catch(error){}};
-  const apply=()=>{safe(ensurePublicationsLinks);if(renderPublicationsPage())return;document.documentElement.classList.remove("ics-route-publications");document.documentElement.classList.toggle("ics-route-mvv",location.pathname==="/missao-visao-valores");safe(fixValues);safe(fixMvvHero);safe(fixMissionVision);safe(ensureVideo);safe(ensureGlobal);safe(fixHomeYouTube);safe(fixInstagram);safe(fixYouTube)};
+  const apply=()=>{safe(bindPublicationsNavigation);safe(ensurePublicationsLinks);if(renderPublicationsPage())return;document.documentElement.classList.remove("ics-route-publications");document.documentElement.classList.toggle("ics-route-mvv",location.pathname==="/missao-visao-valores");safe(fixValues);safe(fixMvvHero);safe(fixMissionVision);safe(ensureVideo);safe(ensureGlobal);safe(fixHomeYouTube);safe(fixInstagram);safe(fixYouTube)};
   const schedule=()=>{clearTimeout(window.__icsHomeAdjustTimer);window.__icsHomeAdjustTimer=setTimeout(apply,120)};
   window.__icsHomeApply=apply;
   document.addEventListener("DOMContentLoaded",schedule);
@@ -365,6 +393,11 @@ for (const htmlPath of [path.join(root, "index.html"), path.join(root, "dist", "
     .replace(/(<link rel="icon" type="image\/png" href=")[^"]*(" \/>)/, `$1${logoUrl}$2`)
     .replace(/\/assets\/index-[^"]+\.js/, `/assets/${outputName}`)
     .replace(/\/assets\/index-[^"]+\.css/, `/assets/${cssOutputName}`);
+  html = html
+    .replace(/\s*<script src="https:\/\/elfsightcdn\.com\/platform\.js" async><\/script>/, `${newline}    <script>if(location.pathname==="/instagram"){const loader=document.createElement("script");loader.src="https://elfsightcdn.com/platform.js";loader.async=true;document.head.appendChild(loader)}</script>`)
+    .replace(/\r?\n\s*<link rel="stylesheet" href="\/assets\/youtube-gallery\.css[^"]*">/g, "")
+    .replace(/\r?\n\s*<script type="module" src="\/assets\/youtube-gallery\.js[^"]*"><\/script>/g, "")
+    .replace(/\s*<\/head>/, `${newline}    <link rel="stylesheet" href="/assets/youtube-gallery.css?v=fixed-20261106">${newline}    <script type="module" src="/assets/youtube-gallery.js?v=fixed-20261106"></script>${newline}  </head>`);
   fs.writeFileSync(htmlPath, html);
 }
 
