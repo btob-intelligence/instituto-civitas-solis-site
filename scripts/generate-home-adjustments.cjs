@@ -3,9 +3,9 @@ const path = require("path");
 
 const root = process.cwd();
 const inputName = "index-i18n-stable-8f6c2d1.js";
-const outputName = "index-publications-dialogues-8a4e6c1.js";
-const cssOutputName = "index-publications-dialogues-8a4e6c1.css";
-const revision = "publications-dialogues-2026-11-06";
+const outputName = "index-global-mobile-panel-6c2e9a4.js";
+const cssOutputName = "index-global-mobile-panel-6c2e9a4.css";
+const revision = "global-mobile-panel-2026-11-06";
 const logoUrl = "https://cdn.awsli.com.br/436/436130/favicon/f0c196521f.png";
 
 const input = path.join(root, "assets", inputName);
@@ -100,7 +100,7 @@ const runtime = `;(()=>{
     const main=document.querySelector("main")||document.querySelector("#root > div > div")||document.getElementById("root");
     if(!main||main.getAttribute("data-ics-publications-rendered")==="publications-dialogues-2026-11-06")return true;
     main.setAttribute("data-ics-publications-rendered","publications-dialogues-2026-11-06");
-    main.innerHTML='<section class="ics-publications-hero"><div class="ics-publications-hero-inner"><p class="ics-publications-eyebrow">Publicações Civitas Solis</p><h1>Acervo de Livros</h1><p>Uma seleção de obras sobre arte, espiritualidade, ciência, tradição hermética e desenvolvimento interior.</p></div></section><section class="ics-publications-intro"><div><h2>Principais publicações</h2><p>Conheça os títulos disponíveis nos canais de compra oficiais. Cada obra reúne caminhos de estudo, contemplação e diálogo com tradições filosóficas, artísticas e espirituais.</p></div></section><section class="ics-publications-list">'+publicationsBooks.map((book,index)=>'<article class="ics-publication-card '+(index%2?'ics-publication-card-alt':'')+'"><div class="ics-publication-cover-wrap"><img src="'+book.image+'" alt="Capa do livro '+book.title+'" loading="lazy"></div><div class="ics-publication-copy"><p class="ics-publication-kicker">'+book.meta+'</p><h2>'+book.title+'</h2><h3>'+book.subtitle+'</h3><p class="ics-publication-author">'+book.author+'</p><p>'+book.description+'</p><div class="ics-publication-actions">'+amazonButton(book)+'</div></div></article>').join('')+'</section>';
+    main.innerHTML='<section class="ics-publications-hero"><div class="ics-publications-hero-inner"><p class="ics-publications-eyebrow">Publicações Civitas Solis</p><h1>Acervo de Livros</h1><p>Uma seleção de obras sobre arte, espiritualidade, ciência, tradição hermética e desenvolvimento interior.</p></div></section><section class="ics-publications-list">'+publicationsBooks.map((book,index)=>'<article class="ics-publication-card '+(index%2?'ics-publication-card-alt':'')+'"><div class="ics-publication-cover-wrap"><img src="'+book.image+'" alt="Capa do livro '+book.title+'" loading="lazy"></div><div class="ics-publication-copy"><p class="ics-publication-kicker">'+book.meta+'</p><h2>'+book.title+'</h2><h3>'+book.subtitle+'</h3><p class="ics-publication-author">'+book.author+'</p><p>'+book.description+'</p><div class="ics-publication-actions">'+amazonButton(book)+'</div></div></article>').join('')+'</section>';
     return true;
   };
   const ensurePublicationsLinks=()=>{
@@ -194,6 +194,10 @@ const runtime = `;(()=>{
   const cardFor=(section,item)=>[...section.querySelectorAll("div")].find(el=>{const h=[...el.children].find(child=>child.tagName==="H3");return h&&item.keys.some(key=>normalize(h.innerText)===key)});
   const panelHtml=item=>'<div class="ics-global-panel-media ics-global-panel-media-count-'+item.images.length+'">'+item.images.map((src,index)=>'<img src="'+src+'" alt="'+item.title+' '+(index+1)+'" tabindex="0">').join("")+'</div><div class="ics-global-panel-copy"><h3>'+item.title+'</h3><p>'+item.detail+'</p></div>';
   const updatePanel=(panel,item,index,lang)=>{const key=lang+":"+index+":"+item.title;if(panel.getAttribute("data-ics-global-panel-key")===key)return;panel.innerHTML=panelHtml(item);panel.setAttribute("data-ics-global-panel-key",key)};
+  const placeGlobalPanel=(panel,card,grid)=>{
+    const anchor=window.matchMedia("(max-width: 900px)").matches&&card?card:grid;
+    if(panel.previousElementSibling!==anchor)anchor.insertAdjacentElement("afterend",panel);
+  };
 
   const ensureVideo=()=>{
     const org=byHeading(["Nossa Organização","Notre Organisation","Our Organization","Nuestra Organización","Unsere Organisation","La Nostra Organizzazione"]);
@@ -243,6 +247,7 @@ const runtime = `;(()=>{
         if(panel){
           panel.hidden=false;
           updatePanel(panel,data.items[index],index,data.lang);
+          placeGlobalPanel(panel,card,card.parentElement);
         }
       };
       return card;
@@ -261,6 +266,9 @@ const runtime = `;(()=>{
       if(selected&&!panel.hidden){
         const index=Number(selected.getAttribute("data-ics-global-card")||0);
         updatePanel(panel,data.items[index],index,data.lang);
+        placeGlobalPanel(panel,selected,grid);
+      }else if(!selected){
+        placeGlobalPanel(panel,null,grid);
       }
     }
     [...section.querySelectorAll("a[href='/trabalho-global']")].forEach(a=>(a.closest(".text-center")||a).remove());
